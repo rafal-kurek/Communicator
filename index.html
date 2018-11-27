@@ -1,0 +1,328 @@
+<html>
+
+<head>
+    <title>Komunikator</title>
+    <style>
+        body {
+            background-color: #730A2A;
+        }
+
+        #poj {
+            position: absolute;
+            left: 30%;
+            top: 5%;
+            width: 40%;
+            height: 90vh;
+            background-color: #696173;
+        }
+
+        #tekst {
+            position: absolute;
+            left: 10%;
+            top: 5%;
+            overflow: scroll;
+            width: 80%;
+            background-color: white;
+            height: 80%;
+        }
+
+        #wpisz {
+            width: 80%;
+            position: absolute;
+            bottom: 4%;
+            height: 50px;
+            left: 10%;
+            font-size: 30px;
+
+        }
+
+        label {
+            font-size: 20px;
+            position: absolute;
+            bottom: 10%;
+            left: 10%;
+            text-align: center;
+            width: 80%;
+
+
+        }
+
+        #prompt {
+            z-index: 1;
+            background-color: rgba(0, 0, 0, 0.5);
+            position: absolute;
+            height: 100vh;
+            width: 100%;
+            top: 0;
+            left: 0;
+
+        }
+
+        #user {
+            position: absolute;
+            top: 30%;
+            left: 35%;
+            width: 30%;
+            height: 30%;
+            background-color: #544D5C;
+
+        }
+
+        #nick {
+            position: absolute;
+            top: 30%;
+            left: 25%;
+            width: 50%;
+            height: 50px;
+            font-size: 30px;
+
+        }
+
+        #btn {
+            position: absolute;
+            top: 40%;
+            left: 40%;
+            top: 60%;
+            font-size: 25px;
+        }
+
+        #info {
+            position: absolute;
+            font-size: 30px;
+            color: white;
+            top: 15%;
+            left: 25%;
+
+        }
+
+        #kto {
+            position: absolute;
+            width: 10%;
+
+            border-radius: 25px;
+            text-align: center;
+            top: 3%;
+            left: 3%;
+            background-color: #696173;
+            display: none;
+            font-size: 30px;
+
+        }
+
+        .mess {
+            width: 100%;
+            height: 50px;
+            float: left;
+            font-size: 25px;
+            background-color: white;
+            position: absolute;
+        }
+
+        .wiad {
+            float: left;
+        }
+
+    </style>
+    <script src="https://code.jquery.com/jquery-1.11.3.js"></script>
+    <link href="jquery.cssemoticons.css" media="screen" rel="stylesheet" type="text/css" />
+    <script src="jquery.cssemoticons.min.js"></script>
+    <script>
+
+        window.onload=function(){
+        var ostatni
+        var stad
+       var data =Date.now() 
+       var wpis
+       console.log(data)
+            //zmienna określająca jak stare wiadomości mają być usuwane z bazy danych, wykorzystywana w funkcji usun
+var old= Number(data) - 7200000
+       console.log(old)
+var user 
+//tablica zawierająca wszytkie cyfry w systemie szesnastkowym, do generowania losowych kolorów
+var kolorki=[1,2,3,4,5,6,7,8,9,0,"A","B","c","D","E","F"]
+var kolor="#"+kolorki[Math.floor((Math.random() * 6))]+kolorki[Math.floor((Math.random() * 6))]+kolorki[Math.floor((Math.random() * 6))]+kolorki[Math.floor((Math.random() * 6))]+kolorki[Math.floor((Math.random() * 6))]+kolorki[Math.floor((Math.random() * 6))]
+var tresc
+
+//logowanie się do komunikatora przez wpisanie swojej nazwy użytkownika
+function loguj(){
+    
+    if(document.getElementById("nick").value !== "") {
+        user = document.getElementById("nick").value
+poll()
+        document.getElementById("prompt").style.display="none"
+        document.getElementById("kto").textContent= "Jestes: " + user
+        
+          document.getElementById("kto").style.display="block"
+    }
+    else {
+        alert("wpisz nazwe uzytkownika")
+    }
+}
+        
+        document.getElementById("btn").addEventListener("click", loguj);
+    
+    //funkcja wysyłająca wiadomość do bazy danych po wciśnięciu ENTER
+    document.getElementById("wpisz").onkeydown=function(e){	
+				if(e.which==13 && document.getElementById("wpisz").value!=""){
+                   
+                    
+                    
+                    
+ wpis =Date.now()
+					tresc=document.getElementById("wpisz").value
+                    
+                    //obiekt przechowujący wszytkie dane o wysyłanej wiadomości
+                    var obj={
+					   akcja:"dodaj",
+                       user:user,
+                        tresc:tresc,
+                        czas:wpis,
+                        kolor:kolor
+					}
+
+console.log(obj)
+
+
+                    //wysyłanie obiektu z danymi o wiadomości do pliku ajaxlp.php \ technologia AJAX
+                    $.ajax({
+					method: "POST",
+					url: "ajaxlp.php",
+					data: obj,
+					success : function(data){
+					
+					}
+				})
+
+                    //czyszczenie inputu dla użytkownika, by mógł wprowadzić nową wiadomość
+document.getElementById("wpisz").value= " "           
+                    
+				}
+			}
+    
+    //funkcaj wyświetlająca wiadomości z bazy danych w komunikatorze
+    function update() {
+        
+        var obj11 = {
+            
+            akcja:"up",
+            tutaj:data
+        }
+         $.ajax({
+					method: "POST",
+					url: "ajaxlp.php",
+					data: obj11,
+					success : function(data){
+                        //zwrócona talica z wiadomościami
+ var dane = JSON.parse(data)
+document.getElementById("tekst").innerHTML=" "
+					 //wszystkie wiadomości są odpowiednio prezentowane w osobnych divach tworzonych dynamicznie, każda z inną datą i nazwą użytkownika w odpowiednim kolorze pobranym z bazy danych
+                        for(var i=0;i<dane.length;i++){
+                           var mess = document.createElement("div")
+                            mess.setAttribute("class","mess")
+mess.setAttribute("id","m"+i)
+if (i ==0){
+mess.style.top=i+"px"
+}
+else {
+
+mess.style.top=i*50+"px"
+}
+  
+                            var a = document.createElement("div")
+                            a.textContent=dane[i].data2
+                            a.setAttribute("class","wiad")
+                            var b = document.createElement("div")
+                            b.style.color = dane[i].kolor
+                            b.textContent="<@"+dane[i].user+">"
+                             b.setAttribute("class","wiad")
+                            var c=document.createElement("div")
+                             c.setAttribute("id","t"+i)
+                             // $("#t"+i).emoticonize();
+                             c.setAttribute("class","wiad")
+                            c.textContent=dane[i].tresc
+                          
+                            
+                            document.getElementById("tekst").appendChild(mess)
+                            document.getElementById("m"+i).appendChild(a)
+                             document.getElementById("m"+i).appendChild(b)
+                             document.getElementById("m"+i).appendChild(c)
+                            //dołączona biblioteka, pozwalająca na wysyłanie emotikonów
+                               $("#t"+i).emoticonize();
+
+                        
+                        }
+					}
+				})  
+        
+    }
+    
+    //AJAX long pooling
+    function poll(){
+        
+        var obj1 = {
+            akcja:"poll",
+        koniec:ostatni,
+            user:user
+        
+    }
+        
+	$.ajax({
+  		method: "POST",
+  		url: "ajaxlp.php",
+  		
+  		data: obj1,
+ 		success : function(data){
+            //ajaxlp.php sprawdza czy w bazie znajdują się nowe wiadomości, jeśli tak wywołuje funkcję update, która prezentuje je na stronie; nie zależnie od wyniku funkcji poll po wykonaniu się funkcja sama się wywołuje nasłuchując cały czas bazę danych
+ 			if(data=="zmiana"){
+                update()
+            }
+ 		},
+ 		complete: poll	
+	})
+}
+        
+    
+//funkcja, która usuwa z bazy stare wiadomości
+function usun(){
+   
+    var obj2 = {
+            akcja:"usun",
+        od:old
+        
+    }
+ $.ajax({
+					method: "POST",
+					url: "ajaxlp.php",
+					data: obj2,
+					success : function(data){
+					
+					}
+				})  
+}
+
+usun()
+
+    
+    }
+
+</script>
+</head>
+
+<body>
+    <div id="kto"></div>
+    <div id="prompt">
+        <div id="user">
+            <div id="info">Podaj nazwe uzytkownika</div>
+            <input type="textbox" id="nick" />
+            <button id="btn">Zatwierdz</button>
+        </div>
+    </div>
+    <div id="poj">
+
+        <div id="tekst"></div>
+        <label>Wpisz tekst</label>
+        <input type="textbox" id="wpisz" />
+    </div>
+</body>
+
+</html>
